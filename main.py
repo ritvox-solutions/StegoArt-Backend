@@ -15,6 +15,11 @@ a package):
     python -m backend.main
 or, for autoreload during development:
     uvicorn backend.main:app --reload
+
+Config (CORS_ALLOWED_ORIGINS, HOST, PORT, RELOAD) is read from real
+environment variables if set, otherwise from a `.env` file placed next to
+this file (backend/.env — see .env.example, gitignored so real values never
+get committed) via python-dotenv. Real env vars always win over `.env`.
 """
 
 import os
@@ -22,6 +27,7 @@ from contextlib import asynccontextmanager
 from pathlib import Path
 
 import torch
+from dotenv import load_dotenv
 from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
@@ -32,6 +38,8 @@ from .services.style_service import StyleService
 
 BACKEND_ROOT = Path(__file__).resolve().parent
 WEIGHTS_DIR = BACKEND_ROOT / "ml" / "weights"
+
+load_dotenv(BACKEND_ROOT / ".env")  # no-op if the file doesn't exist
 
 # Comma-separated list of allowed browser origins, e.g.
 #   CORS_ALLOWED_ORIGINS="https://stegoart.vercel.app,https://stegoart.com"

@@ -9,7 +9,9 @@ User=stegoart
 # resolves `backend` as a package) — e.g. if you cloned to
 # /opt/stegoart/backend, WorkingDirectory is /opt/stegoart.
 WorkingDirectory=/opt/stegoart
-Environment="CORS_ALLOWED_ORIGINS=https://your-project.vercel.app,https://yourdomain.com"
+# No Environment=/EnvironmentFile= needed here: main.py loads
+# /opt/stegoart/backend/.env itself via python-dotenv on startup.
+# Copy backend/.env.example to backend/.env on the server and edit it.
 ExecStart=/opt/stegoart/.venv/bin/python -m backend.main
 Restart=on-failure
 RestartSec=5
