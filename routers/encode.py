@@ -15,6 +15,14 @@ from utils.validation import validate_image_upload, validate_style_name
 
 router = APIRouter()
 
+# Measured (see ml/README.md's style-robust training experiment, "udnie
+# length sensitivity" note): with the v3 weights, udnie-styled text recovery
+# stays strong (>=97% char accuracy) through ~200 chars, then falls off a
+# cliff — 79% at 250, down to 6% by 480 (near MAX_TEXT_CHARS). The other 3
+# styles (candy/mosaic/rain_princess) stay strong (75-100%) even near max
+# length, so this carve-out is udnie-specific, not a general length limit.
+_UDNIE_SAFE_TEXT_CHARS = 200
+
 
 def get_stego_service(request: Request) -> StegoService:
     return request.app.state.stego_service
@@ -70,9 +78,13 @@ async def encode(
             styled_b64 = tensor_to_base64_png(styled_tensor)
 
         # v3 (style-robust) weights make styled-image text recovery usually accurate,
-        # but styled-image *image*-secret recovery is still unreliable — see
-        # EncodeResponse.styled_decode_supported's Field description.
-        styled_decode_supported = (not apply_style) or secret_type == SecretType.text
+        # but styled-image *image*-secret recovery is still unreliable, and udnie
+        # specifically collapses on long text — see EncodeResponse.styled_decode_
+        # supported's Field description and _UDNIE_SAFE_TEXT_CHARS above.
+        styled_decode_supported = (not apply_style) or (
+            secret_type == SecretType.text
+            and not (style_name == "udnie" and len(secret_text) > _UDNIE_SAFE_TEXT_CHARS)
+        )
 
         return EncodeResponse(
             stego_image_base64=tensor_to_base64_png(stego_tensor),

@@ -32,9 +32,15 @@ that's needed; nothing here should be hand-edited independently of `ml`.
 clean-trained weights — they're the "v3" style-robust variant from
 `ml/README.md`'s "Style-robust training experiment" section
 (`ml/weights_style_robust_v3/`), deliberately trading clean-path fidelity
-for text-secret recovery from a *styled* stego image (candy/mosaic/
-rain_princess: ~92-96% char accuracy styled; udnie: ~38%, still weak).
-Image-secret recovery from a styled image is still unreliable (SSIM ~0.31).
+for text-secret recovery from a *styled* stego image. candy/mosaic/
+rain_princess stay strong (75-100% char accuracy) even at long text; udnie
+is just as strong up to ~200 characters but collapses past that (79% at
+250 chars, ~6% near the 510-char max) — see `ml/README.md`'s "udnie length
+sensitivity" table. `routers/encode.py`'s `_UDNIE_SAFE_TEXT_CHARS`
+threshold bakes this into `EncodeResponse.styled_decode_supported`, so
+callers don't need to know this nuance themselves. Image-secret recovery
+from a styled image is still unreliable regardless of style or length
+(SSIM ~0.31).
 
 Consequences for anything reading this backend's `EncodeResponse`:
 cover/stego PSNR and SSIM will read noticeably lower than the ~30dB/~0.93

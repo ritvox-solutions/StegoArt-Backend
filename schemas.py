@@ -29,12 +29,16 @@ class EncodeResponse(BaseModel):
             "Whether styled_image_base64 (when present) can reasonably be sent to /api/decode. "
             "True whenever no style was applied (styled_image_base64 is None, so the question is "
             "moot). As of the style-robust ('v3') model (see ml/README.md's style-robust training "
-            "experiment), also true for text secrets — styled-image text recovery is now usually "
-            "accurate (measured 92-96% char accuracy for the candy/mosaic/rain_princess styles, "
-            "~38% for udnie — still not perfect, check DecodeResponse.confidence) — but false for "
-            "image secrets, where styled recovery remains unreliable (SSIM ~0.31, not a "
-            "recognizable image). The frontend should surface this rather than hardcoding the "
-            "same assumption."
+            "experiment), also true for text secrets under most conditions — styled-image text "
+            "recovery is now usually accurate (measured >=97% char accuracy through ~200 characters "
+            "for candy/mosaic/rain_princess/udnie alike). One carve-out: with style_name='udnie' "
+            "specifically, accuracy collapses for longer text (79% at 250 chars, down to ~6% near "
+            "the 510-char max) while the other 3 styles stay strong (75-100%) even at max length — "
+            "so this is false for udnie + text longer than ~200 characters. Also false for image "
+            "secrets in general, where styled recovery remains unreliable regardless of style or "
+            "length (SSIM ~0.31, not a recognizable image). Check DecodeResponse.confidence for a "
+            "per-decode signal either way. The frontend should surface this rather than hardcoding "
+            "the same assumption."
         )
     )
 

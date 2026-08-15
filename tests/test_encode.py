@@ -48,6 +48,39 @@ def test_encode_with_style_text_secret_flags_styled_decode_supported(client, sam
     assert body["styled_decode_supported"] is True
 
 
+def test_encode_udnie_long_text_flags_styled_decode_unsupported(client, sample_image_bytes):
+    # udnie-styled text recovery collapses on longer text (measured: 79% at
+    # 250 chars, ~6% near max) even though the other 3 styles stay strong —
+    # see _UDNIE_SAFE_TEXT_CHARS in routers/encode.py.
+    response = client.post(
+        "/api/encode",
+        files={"cover_image": ("cover.png", sample_image_bytes, "image/png")},
+        data={
+            "secret_type": "text",
+            "secret_text": "x" * 250,
+            "apply_style": "true",
+            "style_name": "udnie",
+        },
+    )
+    assert response.status_code == 200
+    assert response.json()["styled_decode_supported"] is False
+
+
+def test_encode_udnie_short_text_flags_styled_decode_supported(client, sample_image_bytes):
+    response = client.post(
+        "/api/encode",
+        files={"cover_image": ("cover.png", sample_image_bytes, "image/png")},
+        data={
+            "secret_type": "text",
+            "secret_text": "short udnie message",
+            "apply_style": "true",
+            "style_name": "udnie",
+        },
+    )
+    assert response.status_code == 200
+    assert response.json()["styled_decode_supported"] is True
+
+
 def test_encode_with_style_image_secret_flags_styled_decode_unsupported(client, sample_image_bytes, sample_image_bytes_2):
     # Image-secret recovery from a styled image remains unreliable even with
     # v3 weights (SSIM ~0.31) — unlike text, this stays flagged unsupported.
