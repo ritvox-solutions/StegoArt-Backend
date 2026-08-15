@@ -10,11 +10,17 @@ Self-contained: model code and weights live under ./ml (an embedded copy of
 the standalone `ml` repo's inference-relevant modules, kept in sync
 manually — see ml/README.md in this repo). No sibling `ml` checkout needed.
 
-Run (from the folder CONTAINING this repo's clone, so `backend` resolves as
-a package):
-    python -m backend.main
+Flat, standalone layout: this repo's own root is the app root (no outer
+`backend` package wrapper) — every import here is absolute, resolved
+against this file's own directory. This matches how PaaS/Docker platforms
+run a Python web app (cwd = app root, `uvicorn main:app`), so no special
+working-directory gymnastics are needed at deploy time.
+
+Run (from INSIDE this repo's own root, i.e. `cd backend` first if you
+cloned it as a subfolder):
+    python main.py
 or, for autoreload during development:
-    uvicorn backend.main:app --reload
+    uvicorn main:app --reload
 
 Config (CORS_ALLOWED_ORIGINS, HOST, PORT, RELOAD) is read from real
 environment variables if set, otherwise from a `.env` file placed next to
@@ -32,9 +38,9 @@ from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 
-from .routers import decode, encode, styles
-from .services.stego_service import StegoService
-from .services.style_service import StyleService
+from routers import decode, encode, styles
+from services.stego_service import StegoService
+from services.style_service import StyleService
 
 BACKEND_ROOT = Path(__file__).resolve().parent
 WEIGHTS_DIR = BACKEND_ROOT / "ml" / "weights"
@@ -113,4 +119,4 @@ if __name__ == "__main__":
     host = os.environ.get("HOST", "127.0.0.1")
     port = int(os.environ.get("PORT", "8000"))
     reload = os.environ.get("RELOAD", "false").lower() == "true"
-    uvicorn.run("backend.main:app", host=host, port=port, reload=reload)
+    uvicorn.run("main:app", host=host, port=port, reload=reload)

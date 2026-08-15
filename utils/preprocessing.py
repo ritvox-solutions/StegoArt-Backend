@@ -12,8 +12,8 @@ import io
 import torch
 from PIL import Image
 
-from ..ml.utils.image_utils import load_image_as_tensor, tensor_to_pil
-from ..ml.utils.text_encoding import tensor_to_text, text_to_tensor
+from ml.utils.image_utils import load_image_as_tensor, tensor_to_pil
+from ml.utils.text_encoding import tensor_to_text, text_to_tensor
 
 __all__ = [
     "strip_exif",

@@ -14,7 +14,7 @@ import io
 import torch
 from PIL import Image
 
-from ..ml.models import apply_style, list_styles, load_style_model
+from ml.models import apply_style, list_styles, load_style_model
 
 THUMBNAIL_SIZE = 128
 

@@ -1,4 +1,4 @@
-from ..ml.config import MAX_TEXT_CHARS
+from ml.config import MAX_TEXT_CHARS
 
 
 def test_encode_text_secret_returns_expected_shape(client, sample_image_bytes):

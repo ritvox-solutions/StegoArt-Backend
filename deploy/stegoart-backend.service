@@ -5,14 +5,13 @@ After=network.target
 [Service]
 Type=simple
 User=stegoart
-# The folder CONTAINING your backend/ clone (so `python -m backend.main`
-# resolves `backend` as a package) — e.g. if you cloned to
-# /opt/stegoart/backend, WorkingDirectory is /opt/stegoart.
-WorkingDirectory=/opt/stegoart
+# This repo's OWN root (flat layout — main.py imports absolutely against
+# its own directory), e.g. if you cloned to /opt/stegoart/backend:
+WorkingDirectory=/opt/stegoart/backend
 # No Environment=/EnvironmentFile= needed here: main.py loads
 # /opt/stegoart/backend/.env itself via python-dotenv on startup.
 # Copy backend/.env.example to backend/.env on the server and edit it.
-ExecStart=/opt/stegoart/.venv/bin/python -m backend.main
+ExecStart=/opt/stegoart/.venv/bin/python main.py
 Restart=on-failure
 RestartSec=5
 

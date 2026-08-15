@@ -12,7 +12,7 @@ import pytest
 from fastapi.testclient import TestClient
 from PIL import Image
 
-from backend.main import app
+from main import app
 
 
 @pytest.fixture(scope="session")

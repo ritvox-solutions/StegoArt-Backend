@@ -8,8 +8,8 @@ actually present on disk.
 
 from fastapi import APIRouter, Depends, HTTPException, Request, Response
 
-from ..schemas import StyleInfo, StylesResponse
-from ..services.style_service import StyleService
+from schemas import StyleInfo, StylesResponse
+from services.style_service import StyleService
 
 router = APIRouter()
 

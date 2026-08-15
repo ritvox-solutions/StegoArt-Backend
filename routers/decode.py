@@ -6,10 +6,10 @@ from one (measured in ml/test_style_transfer.py).
 
 from fastapi import APIRouter, Depends, File, Form, Request, UploadFile
 
-from ..schemas import DecodeResponse, SecretType
-from ..services.stego_service import StegoService, image_decode_confidence, text_decode_confidence
-from ..utils.preprocessing import decode_text_secret, load_upload_as_tensor, tensor_to_base64_png
-from ..utils.validation import validate_image_upload
+from schemas import DecodeResponse, SecretType
+from services.stego_service import StegoService, image_decode_confidence, text_decode_confidence
+from utils.preprocessing import decode_text_secret, load_upload_as_tensor, tensor_to_base64_png
+from utils.validation import validate_image_upload
 
 router = APIRouter()
 
