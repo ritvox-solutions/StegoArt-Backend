@@ -29,7 +29,9 @@ def test_encode_image_secret(client, sample_image_bytes, sample_image_bytes_2):
     assert response.json()["stego_image_base64"]
 
 
-def test_encode_with_style_flags_styled_decode_unsupported(client, sample_image_bytes):
+def test_encode_with_style_text_secret_flags_styled_decode_supported(client, sample_image_bytes):
+    # v3 (style-robust) weights make styled-image text recovery usually
+    # accurate — see EncodeResponse.styled_decode_supported's Field description.
     response = client.post(
         "/api/encode",
         files={"cover_image": ("cover.png", sample_image_bytes, "image/png")},
@@ -39,6 +41,23 @@ def test_encode_with_style_flags_styled_decode_unsupported(client, sample_image_
             "apply_style": "true",
             "style_name": "mosaic",
         },
+    )
+    assert response.status_code == 200
+    body = response.json()
+    assert body["styled_image_base64"]
+    assert body["styled_decode_supported"] is True
+
+
+def test_encode_with_style_image_secret_flags_styled_decode_unsupported(client, sample_image_bytes, sample_image_bytes_2):
+    # Image-secret recovery from a styled image remains unreliable even with
+    # v3 weights (SSIM ~0.31) — unlike text, this stays flagged unsupported.
+    response = client.post(
+        "/api/encode",
+        files={
+            "cover_image": ("cover.png", sample_image_bytes, "image/png"),
+            "secret_image": ("secret.png", sample_image_bytes_2, "image/png"),
+        },
+        data={"secret_type": "image", "apply_style": "true", "style_name": "mosaic"},
     )
     assert response.status_code == 200
     body = response.json()

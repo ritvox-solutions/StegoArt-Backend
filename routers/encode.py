@@ -69,12 +69,17 @@ async def encode(
             styled_tensor = style_service.apply(stego_tensor, style_name)
             styled_b64 = tensor_to_base64_png(styled_tensor)
 
+        # v3 (style-robust) weights make styled-image text recovery usually accurate,
+        # but styled-image *image*-secret recovery is still unreliable — see
+        # EncodeResponse.styled_decode_supported's Field description.
+        styled_decode_supported = (not apply_style) or secret_type == SecretType.text
+
         return EncodeResponse(
             stego_image_base64=tensor_to_base64_png(stego_tensor),
             styled_image_base64=styled_b64,
             psnr=psnr,
             ssim=ssim,
-            styled_decode_supported=not apply_style,
+            styled_decode_supported=styled_decode_supported,
         )
     finally:
         await cover_image.close()

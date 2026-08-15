@@ -26,10 +26,15 @@ class EncodeResponse(BaseModel):
     ssim: float = Field(description="SSIM between cover and the UNSTYLED stego image.")
     styled_decode_supported: bool = Field(
         description=(
-            "False whenever a styled image was returned. Style transfer destroys the hidden "
-            "signal (Mode A, confirmed empirically in ml/test_style_transfer.py) — only "
-            "stego_image_base64 should ever be sent to /api/decode, never styled_image_base64. "
-            "The frontend should surface this rather than hardcoding the same assumption."
+            "Whether styled_image_base64 (when present) can reasonably be sent to /api/decode. "
+            "True whenever no style was applied (styled_image_base64 is None, so the question is "
+            "moot). As of the style-robust ('v3') model (see ml/README.md's style-robust training "
+            "experiment), also true for text secrets — styled-image text recovery is now usually "
+            "accurate (measured 92-96% char accuracy for the candy/mosaic/rain_princess styles, "
+            "~38% for udnie — still not perfect, check DecodeResponse.confidence) — but false for "
+            "image secrets, where styled recovery remains unreliable (SSIM ~0.31, not a "
+            "recognizable image). The frontend should surface this rather than hardcoding the "
+            "same assumption."
         )
     )
 

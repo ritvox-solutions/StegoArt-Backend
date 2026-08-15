@@ -25,3 +25,20 @@ architecture changes), re-copy the same files from `ml/` into this folder —
 this directory's internal relative imports (`from ..config import ...`
 etc.) mirror `ml`'s own structure exactly, so a straight file copy is all
 that's needed; nothing here should be hand-edited independently of `ml`.
+
+## Current weights: style-robust v3 (not the clean-only original)
+
+`encoder.pth`/`decoder.pth` here are **not** `ml/weights/`'s original
+clean-trained weights — they're the "v3" style-robust variant from
+`ml/README.md`'s "Style-robust training experiment" section
+(`ml/weights_style_robust_v3/`), deliberately trading clean-path fidelity
+for text-secret recovery from a *styled* stego image (candy/mosaic/
+rain_princess: ~92-96% char accuracy styled; udnie: ~38%, still weak).
+Image-secret recovery from a styled image is still unreliable (SSIM ~0.31).
+
+Consequences for anything reading this backend's `EncodeResponse`:
+cover/stego PSNR and SSIM will read noticeably lower than the ~30dB/~0.93
+this project's docs elsewhere describe as "the" numbers — that's expected
+with these weights, not a regression. See `ml/README.md` for the full
+before/after comparison table and how to reproduce or revert to the
+original (`ml/weights/`) weights.
