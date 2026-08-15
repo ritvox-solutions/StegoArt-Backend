@@ -1,0 +1,16 @@
+# Reverse proxy for the StegoArt backend: terminates HTTPS (auto-provisions
+# and renews a free Let's Encrypt cert for the domain below) and forwards
+# to uvicorn running locally on 127.0.0.1:8000. The backend process itself
+# never needs to be exposed to the internet directly.
+#
+# Replace the domain with your own subdomain (must have a DNS A/AAAA record
+# pointing at this server's public IP before Caddy can issue a cert for it).
+#
+# Install: https://caddyserver.com/docs/install
+# Run:     sudo caddy run --config /etc/caddy/Caddyfile
+# Or, if installed as a system service: copy this file to /etc/caddy/Caddyfile
+# and `sudo systemctl reload caddy`.
+
+api.yourdomain.com {
+    reverse_proxy 127.0.0.1:8000
+}

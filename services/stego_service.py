@@ -17,9 +17,9 @@ from pathlib import Path
 import torch
 import torch.nn.functional as F
 
-from ml.config import BLOCK_SIZE, HEADER_BITS, SECRET_MAP_GRID
-from ml.models import HidingNetwork, RevealNetwork
-from ml.utils.text_encoding import tensor_to_text
+from ..ml.config import BLOCK_SIZE, HEADER_BITS, SECRET_MAP_GRID
+from ..ml.models import HidingNetwork, RevealNetwork
+from ..ml.utils.text_encoding import tensor_to_text
 
 # Empirically calibrated against this project's own trained model (measured,
 # not guessed — see backend build notes): a clean recovered photo has LOW

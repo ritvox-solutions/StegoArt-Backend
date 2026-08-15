@@ -9,8 +9,8 @@ here even when apply_style was requested.
 
 import torch
 
-from ml.utils.metrics import psnr as _psnr
-from ml.utils.metrics import ssim as _ssim
+from ..ml.utils.metrics import psnr as _psnr
+from ..ml.utils.metrics import ssim as _ssim
 
 
 def cover_stego_metrics(cover: torch.Tensor, stego: torch.Tensor) -> tuple:
