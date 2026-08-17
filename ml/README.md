@@ -9,8 +9,7 @@ sibling `ml` checkout required.
 
 Included: `config.py`, `models/` (network + style-transfer architectures),
 `utils/` (text encoding, image conversion, PSNR/SSIM), and `weights/`
-(`encoder.pth`/`decoder.pth` + `encoder_image.pth`/`decoder_image.pth` —
-two separate trained pairs, see "Two model pairs" below — plus
+(`encoder.pth`/`decoder.pth` — see "Model weights" below — plus
 `weights/styles/*.pth`).
 
 Not included: `data/` (dataset download/loading), `train.py`, `evaluate.py`,
@@ -28,36 +27,31 @@ this directory's internal relative imports (`from ..config import ...`
 etc.) mirror `ml`'s own structure exactly, so a straight file copy is all
 that's needed; nothing here should be hand-edited independently of `ml`.
 
-## Two model pairs, not one (not the clean-only original either)
+## Model weights: the "v3" style-robust text model
 
-`StegoService` (`../services/stego_service.py`) loads **two** trained
-encoder/decoder pairs and routes by `secret_type` — a single style-robust
-model can't be good at both text and image secrets (verified: training one
-model on both, or reusing one for the other, measurably breaks whichever
-wasn't its focus). Neither pair is `ml/weights/`'s original clean-trained
-weights.
+`StegoService` (`../services/stego_service.py`) loads a single trained
+encoder/decoder pair — `encoder.pth`/`decoder.pth`, the "v3" style-robust
+variant (from `ml/weights_style_robust_v3/`), not `ml/weights/`'s original
+clean-trained weights. This project only hides text secrets, so v3 (which
+was tuned specifically for styled-**text** recovery) is the one pair the
+backend needs. candy/mosaic/rain_princess stay strong (75-100% char
+accuracy) even at long text; udnie is just as strong up to ~200 characters
+but collapses past that (79% at 250 chars, ~6% near the 510-char max) —
+see `ml/README.md`'s "udnie length sensitivity" table. `routers/encode.py`'s
+`_UDNIE_SAFE_TEXT_CHARS` threshold bakes this into
+`EncodeResponse.styled_decode_supported`.
 
-- **`encoder.pth`/`decoder.pth`** — the "v3" style-robust variant (from
-  `ml/weights_style_robust_v3/`), used for **text** secrets. candy/mosaic/
-  rain_princess stay strong (75-100% char accuracy) even at long text;
-  udnie is just as strong up to ~200 characters but collapses past that
-  (79% at 250 chars, ~6% near the 510-char max) — see `ml/README.md`'s
-  "udnie length sensitivity" table. `routers/encode.py`'s
-  `_UDNIE_SAFE_TEXT_CHARS` threshold bakes this into
-  `EncodeResponse.styled_decode_supported`.
-- **`encoder_image.pth`/`decoder_image.pth`** — the image-secret-dedicated
-  variant (from `ml/weights_style_robust_img/`), used for **image**
-  secrets. Styled-image recovery is meaningfully better than v3's would be
-  (SSIM ~0.40-0.44 across all 4 styles, no longer a udnie-specific outlier)
-  but still not reliable enough to flag `styled_decode_supported: true` —
-  it's "recognizable but degraded," not "trustworthy." This pair would NOT
-  handle text secrets well if you tried (verified: 8-22% char accuracy on
-  styled text) — never use it for `secret_type=text`.
+An earlier iteration of this project also supported image secrets, with a
+second, image-dedicated model pair (`encoder_image.pth`/`decoder_image.pth`,
+from `ml/weights_style_robust_img/`) loaded alongside v3 and routed by
+`secret_type`. That path has been removed — the backend, API, and frontend
+are text-only now — so those weights are no longer shipped here (still kept
+in the standalone `ml` repo's `weights_style_robust_img/` for reference).
 
-Consequences for anything reading this backend's `EncodeResponse`:
-cover/stego PSNR and SSIM (always computed against the text/v3 pair's
-output, per `routers/encode.py`) will read noticeably lower than the
-~30dB/~0.93 this project's docs elsewhere describe as "the" numbers —
-that's expected with these weights, not a regression. See `ml/README.md`
-for the full before/after comparison tables and how to reproduce or revert
-to the original (`ml/weights/`) weights.
+Consequence for anything reading this backend's `EncodeResponse`:
+cover/stego PSNR and SSIM (computed against v3's output, per
+`routers/encode.py`) will read noticeably lower than the ~30dB/~0.93 this
+project's docs elsewhere describe as "the" numbers — that's expected with
+these weights, not a regression. See `ml/README.md` for the full
+before/after comparison tables and how to reproduce or revert to the
+original (`ml/weights/`) weights.

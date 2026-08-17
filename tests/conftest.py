@@ -31,8 +31,3 @@ def _make_image_bytes(size: int = 64, color=(120, 180, 90)) -> bytes:
 @pytest.fixture
 def sample_image_bytes():
     return _make_image_bytes(color=(120, 180, 90))
-
-
-@pytest.fixture
-def sample_image_bytes_2():
-    return _make_image_bytes(color=(30, 60, 200))

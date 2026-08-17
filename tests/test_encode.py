@@ -5,7 +5,7 @@ def test_encode_text_secret_returns_expected_shape(client, sample_image_bytes):
     response = client.post(
         "/api/encode",
         files={"cover_image": ("cover.png", sample_image_bytes, "image/png")},
-        data={"secret_type": "text", "secret_text": "hello world"},
+        data={"secret_text": "hello world"},
     )
     assert response.status_code == 200
     body = response.json()
@@ -16,27 +16,13 @@ def test_encode_text_secret_returns_expected_shape(client, sample_image_bytes):
     assert body["styled_decode_supported"] is True
 
 
-def test_encode_image_secret(client, sample_image_bytes, sample_image_bytes_2):
-    response = client.post(
-        "/api/encode",
-        files={
-            "cover_image": ("cover.png", sample_image_bytes, "image/png"),
-            "secret_image": ("secret.png", sample_image_bytes_2, "image/png"),
-        },
-        data={"secret_type": "image"},
-    )
-    assert response.status_code == 200
-    assert response.json()["stego_image_base64"]
-
-
-def test_encode_with_style_text_secret_flags_styled_decode_supported(client, sample_image_bytes):
+def test_encode_with_style_flags_styled_decode_supported(client, sample_image_bytes):
     # v3 (style-robust) weights make styled-image text recovery usually
     # accurate — see EncodeResponse.styled_decode_supported's Field description.
     response = client.post(
         "/api/encode",
         files={"cover_image": ("cover.png", sample_image_bytes, "image/png")},
         data={
-            "secret_type": "text",
             "secret_text": "styled test",
             "apply_style": "true",
             "style_name": "mosaic",
@@ -56,7 +42,6 @@ def test_encode_udnie_long_text_flags_styled_decode_unsupported(client, sample_i
         "/api/encode",
         files={"cover_image": ("cover.png", sample_image_bytes, "image/png")},
         data={
-            "secret_type": "text",
             "secret_text": "x" * 250,
             "apply_style": "true",
             "style_name": "udnie",
@@ -71,7 +56,6 @@ def test_encode_udnie_short_text_flags_styled_decode_supported(client, sample_im
         "/api/encode",
         files={"cover_image": ("cover.png", sample_image_bytes, "image/png")},
         data={
-            "secret_type": "text",
             "secret_text": "short udnie message",
             "apply_style": "true",
             "style_name": "udnie",
@@ -81,29 +65,11 @@ def test_encode_udnie_short_text_flags_styled_decode_supported(client, sample_im
     assert response.json()["styled_decode_supported"] is True
 
 
-def test_encode_with_style_image_secret_flags_styled_decode_unsupported(client, sample_image_bytes, sample_image_bytes_2):
-    # Image-secret recovery from a styled image remains unreliable even with
-    # v3 weights (SSIM ~0.31) — unlike text, this stays flagged unsupported.
-    response = client.post(
-        "/api/encode",
-        files={
-            "cover_image": ("cover.png", sample_image_bytes, "image/png"),
-            "secret_image": ("secret.png", sample_image_bytes_2, "image/png"),
-        },
-        data={"secret_type": "image", "apply_style": "true", "style_name": "mosaic"},
-    )
-    assert response.status_code == 200
-    body = response.json()
-    assert body["styled_image_base64"]
-    assert body["styled_decode_supported"] is False
-
-
 def test_encode_unknown_style_returns_400(client, sample_image_bytes):
     response = client.post(
         "/api/encode",
         files={"cover_image": ("cover.png", sample_image_bytes, "image/png")},
         data={
-            "secret_type": "text",
             "secret_text": "hi",
             "apply_style": "true",
             "style_name": "not-a-real-style",
@@ -116,16 +82,7 @@ def test_encode_missing_secret_text_returns_422(client, sample_image_bytes):
     response = client.post(
         "/api/encode",
         files={"cover_image": ("cover.png", sample_image_bytes, "image/png")},
-        data={"secret_type": "text"},
-    )
-    assert response.status_code == 422
-
-
-def test_encode_missing_secret_image_returns_422(client, sample_image_bytes):
-    response = client.post(
-        "/api/encode",
-        files={"cover_image": ("cover.png", sample_image_bytes, "image/png")},
-        data={"secret_type": "image"},
+        data={},
     )
     assert response.status_code == 422
 
@@ -134,7 +91,7 @@ def test_encode_text_too_long_returns_422(client, sample_image_bytes):
     response = client.post(
         "/api/encode",
         files={"cover_image": ("cover.png", sample_image_bytes, "image/png")},
-        data={"secret_type": "text", "secret_text": "x" * (MAX_TEXT_CHARS + 1)},
+        data={"secret_text": "x" * (MAX_TEXT_CHARS + 1)},
     )
     assert response.status_code == 422
 
@@ -143,7 +100,7 @@ def test_encode_invalid_file_type_returns_400(client):
     response = client.post(
         "/api/encode",
         files={"cover_image": ("cover.txt", b"not an image", "text/plain")},
-        data={"secret_type": "text", "secret_text": "hi"},
+        data={"secret_text": "hi"},
     )
     assert response.status_code == 400
 
@@ -153,6 +110,6 @@ def test_encode_oversized_file_returns_413(client):
     response = client.post(
         "/api/encode",
         files={"cover_image": ("cover.png", huge, "image/png")},
-        data={"secret_type": "text", "secret_text": "hi"},
+        data={"secret_text": "hi"},
     )
     assert response.status_code == 413

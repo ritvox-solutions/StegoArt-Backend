@@ -35,7 +35,7 @@ python main.py
 
 | Method | Path | Description |
 |---|---|---|
-| POST | `/api/encode` | Hide a text or image secret in a cover image; optionally render a styled copy |
+| POST | `/api/encode` | Hide a text secret in a cover image; optionally render a styled copy |
 | POST | `/api/decode` | Extract a secret from a plain (unstyled) stego image |
 | GET | `/api/styles` | List available style-transfer presets + thumbnail URLs |
 | GET | `/api/styles/{name}/thumbnail` | PNG thumbnail for one style |
