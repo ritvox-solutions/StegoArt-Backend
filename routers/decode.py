@@ -1,7 +1,9 @@
-"""POST /api/decode — extract a hidden secret from a (plain, unstyled) stego
-image. See EncodeResponse.styled_decode_supported / Mode A: a styled image
-should never be sent here — the Reveal Network can't recover a usable secret
-from one (measured in ml/test_style_transfer.py).
+"""POST /api/decode — extract a hidden secret from a stego image. Works on
+plain (unstyled) images always; also works on styled images for text
+secrets under most conditions (see EncodeResponse.styled_decode_supported
+and ml/README.md's style-robust training experiment) — check that field
+rather than assuming either way, since it varies by secret type, style, and
+(for udnie specifically) text length.
 """
 
 from fastapi import APIRouter, Depends, File, Form, Request, UploadFile
@@ -29,7 +31,7 @@ async def decode(
         validate_image_upload(data, "stego_image")
         stego_tensor = load_upload_as_tensor(data).unsqueeze(0)
 
-        recovered = stego_service.decode(stego_tensor)
+        recovered = stego_service.decode(stego_tensor, secret_type_hint.value)
 
         if secret_type_hint == SecretType.text:
             return DecodeResponse(

@@ -69,7 +69,7 @@ async def encode(
                 raise HTTPException(status_code=422, detail="style_name is required when apply_style is true")
             validate_style_name(style_name, style_service.available_styles())
 
-        stego_tensor = stego_service.encode(cover_tensor, secret_tensor)
+        stego_tensor = stego_service.encode(cover_tensor, secret_tensor, secret_type.value)
         psnr, ssim = cover_stego_metrics(cover_tensor, stego_tensor)
 
         styled_b64 = None
